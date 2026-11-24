@@ -62,7 +62,6 @@ const memos = sortByDateDesc(await getCollection('memos', isPublished)).map((mem
             ) : (
               memo.data.description && <p class="memo-desc">{memo.data.description}</p>
             )}
-            <a href={`/now/${memo.id}`} class="memo-more">阅读全文 →</a>
           </article>
         ))}
       </div>
@@ -199,20 +198,14 @@ const memos = sortByDateDesc(await getCollection('memos', isPublished)).map((mem
     margin-top: 0.25rem;
   }
 
+  .memo-item > :last-child {
+    margin-bottom: 0;
+  }
+
   .memo-desc {
     margin: 0 0 0.7rem;
     color: var(--fg-secondary);
     font-size: 0.94rem;
-  }
-
-  .memo-more {
-    font-size: 0.84rem;
-    color: var(--fg-muted);
-    text-decoration: none;
-  }
-
-  .memo-more:hover {
-    color: var(--fg);
   }
 
   .empty-state {
