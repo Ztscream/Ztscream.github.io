@@ -1,0 +1,377 @@
+:root {
+  --bg: #fcfcfa;
+  --bg-elevated: #f5f4f0;
+  --bg-backdrop: rgba(252, 252, 250, 0.82);
+  --fg: #1c1c1a;
+  --fg-secondary: #454540;
+  --fg-muted: #787771;
+  --fg-faint: #b0afaa;
+  --border: rgba(28, 28, 26, 0.08);
+  --border-strong: rgba(28, 28, 26, 0.16);
+  --code-bg: #f4f3ef;
+  --selection: rgba(28, 28, 26, 0.1);
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+html.dark {
+  --bg: #10100f;
+  --bg-elevated: #181816;
+  --bg-backdrop: rgba(16, 16, 15, 0.82);
+  --fg: #e8e7e3;
+  --fg-secondary: #b8b7b2;
+  --fg-muted: #7e7d78;
+  --fg-faint: #464642;
+  --border: rgba(232, 231, 227, 0.08);
+  --border-strong: rgba(232, 231, 227, 0.18);
+  --code-bg: #171715;
+  --selection: rgba(232, 231, 227, 0.14);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: var(--selection);
+}
+
+html {
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.78;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Main Editorial Column */
+.container {
+  width: 100%;
+  max-width: 43rem; /* ~688px */
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+main.page-main {
+  flex: 1;
+  padding-top: 3rem;
+  padding-bottom: 5rem;
+}
+
+/* Subtle Link Underline inside Prose & Intro */
+.prose a,
+.link-underline {
+  text-decoration: underline;
+  text-decoration-color: var(--border-strong);
+  text-underline-offset: 4px;
+  transition: text-decoration-color 0.2s ease, color 0.2s ease;
+}
+
+.prose a:hover,
+.link-underline:hover {
+  color: var(--fg);
+  text-decoration-color: var(--fg);
+}
+
+/* Editorial Year Watermark List (inspired by antfu.me) */
+.year-group {
+  position: relative;
+  margin-bottom: 2.75rem;
+}
+
+.year-watermark {
+  position: relative;
+  height: 2.2rem;
+  pointer-events: none;
+  user-select: none;
+}
+
+.year-watermark span {
+  position: absolute;
+  left: -0.25rem;
+  top: -1.1rem;
+  font-size: 4.5rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--fg);
+  opacity: 0.065;
+  font-family: var(--font-sans);
+}
+
+html.dark .year-watermark span {
+  opacity: 0.08;
+}
+
+.entry-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.entry-item {
+  margin-bottom: 0.35rem;
+}
+
+.entry-link {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  color: var(--fg-secondary);
+  transition: color 0.18s ease, opacity 0.18s ease;
+}
+
+.entry-link:hover {
+  color: var(--fg);
+}
+
+.entry-title {
+  font-size: 1.02rem;
+  font-weight: 450;
+  line-height: 1.5;
+}
+
+.entry-meta {
+  flex-shrink: 0;
+  font-size: 0.84rem;
+  font-family: var(--font-mono);
+  color: var(--fg-muted);
+  opacity: 0.8;
+}
+
+/* Markdown Prose Typography */
+.prose {
+  color: var(--fg-secondary);
+  font-size: 1.015rem;
+  line-height: 1.84;
+  word-break: break-word;
+}
+
+.prose > *:first-child {
+  margin-top: 0;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4 {
+  color: var(--fg);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.4;
+  scroll-margin-top: 5rem;
+}
+
+.prose h2 {
+  font-size: 1.32rem;
+  margin-top: 2.6rem;
+  margin-bottom: 0.9rem;
+}
+
+.prose h3 {
+  font-size: 1.12rem;
+  margin-top: 2rem;
+  margin-bottom: 0.65rem;
+}
+
+.prose p {
+  margin: 1.15rem 0;
+}
+
+.prose strong {
+  color: var(--fg);
+  font-weight: 600;
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.4rem;
+  margin: 1rem 0;
+}
+
+.prose li {
+  margin: 0.4rem 0;
+}
+
+.prose li::marker {
+  color: var(--fg-faint);
+}
+
+.prose blockquote {
+  margin: 1.5rem 0;
+  padding: 0.15rem 0 0.15rem 1.1rem;
+  border-left: 2px solid var(--border-strong);
+  color: var(--fg-muted);
+  font-style: normal;
+}
+
+.prose hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 2.5rem auto;
+  width: 4rem;
+}
+
+.prose img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+  margin: 1.75rem auto;
+  border: 1px solid var(--border);
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.6rem 0;
+  font-size: 0.94rem;
+}
+
+.prose th,
+.prose td {
+  padding: 0.6rem 0.8rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+
+.prose th {
+  color: var(--fg);
+  font-weight: 600;
+  border-bottom-color: var(--border-strong);
+}
+
+/* Inline Code & Shiki Dual-Theme Code Blocks */
+.prose :not(pre) > code {
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  background: var(--code-bg);
+  color: var(--fg);
+  padding: 0.18em 0.42em;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+
+.code-block-wrapper {
+  position: relative;
+  margin: 1.5rem 0;
+}
+
+.prose pre.astro-code {
+  margin: 1.5rem 0;
+  padding: 1.05rem 1.2rem;
+  border-radius: 8px;
+  background-color: var(--code-bg) !important;
+  border: 1px solid var(--border);
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  line-height: 1.68;
+}
+
+.code-block-wrapper pre.astro-code {
+  margin: 0;
+}
+
+.astro-code,
+.astro-code span {
+  color: var(--shiki-light);
+  font-style: var(--shiki-light-font-style);
+  font-weight: var(--shiki-light-font-weight);
+  text-decoration: var(--shiki-light-text-decoration);
+}
+
+html.dark .astro-code,
+html.dark .astro-code span {
+  color: var(--shiki-dark);
+  font-style: var(--shiki-dark-font-style);
+  font-weight: var(--shiki-dark-font-weight);
+  text-decoration: var(--shiki-dark-text-decoration);
+}
+
+.copy-code-btn {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.55rem;
+  padding: 0.28rem 0.55rem;
+  font-size: 0.74rem;
+  font-family: var(--font-mono);
+  color: var(--fg-muted);
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: 5px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+
+.code-block-wrapper:hover .copy-code-btn,
+.copy-code-btn:focus-visible {
+  opacity: 1;
+}
+
+.copy-code-btn:hover {
+  color: var(--fg);
+  border-color: var(--fg-muted);
+}
+
+/* KaTeX Math Overflow Protection */
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.5rem 0;
+}
+
+/* Tag Pill */
+.tag-pill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.78rem;
+  font-family: var(--font-mono);
+  color: var(--fg-muted);
+  padding: 0.12rem 0.5rem;
+  border-radius: 4px;
+  background: var(--bg-elevated);
+  transition: color 0.18s ease, background 0.18s ease;
+}
+
+.tag-pill:hover {
+  color: var(--fg);
+}
+
+@media (max-width: 640px) {
+  main.page-main {
+    padding-top: 2rem;
+    padding-bottom: 3.5rem;
+  }
+
+  .entry-link {
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.55rem 0;
+  }
+
+  .year-watermark span {
+    font-size: 3.4rem;
+    top: -0.7rem;
+  }
+}

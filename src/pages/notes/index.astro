@@ -1,0 +1,175 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import {
+  formatMonthDay,
+  isPublished,
+  resolveDate,
+  resolveTitle,
+  sortByDateDesc,
+} from '../../utils/content';
+
+const notes = sortByDateDesc(await getCollection('notes', isPublished));
+
+// 按主题（topic）组织成知识体系树
+const groupedByTopic = new Map<string, typeof notes>();
+const allTags = new Set<string>();
+
+for (const note of notes) {
+  const topic = note.data.topic?.trim() || '未分类';
+  if (!groupedByTopic.has(topic)) groupedByTopic.set(topic, []);
+  groupedByTopic.get(topic)!.push(note);
+  (note.data.tags || []).forEach((t) => allTags.add(t));
+}
+---
+
+<BaseLayout title="学习笔记" description="按主题体系化沉淀的持续更新学习笔记。">
+  <header class="page-head">
+    <h1>Notes</h1>
+    <p>按主题组织的个人知识库，持续修订生长。</p>
+  </header>
+
+  {allTags.size > 0 && (
+    <div class="tag-filter-bar" id="note-tag-filters">
+      <button type="button" class="filter-chip active" data-tag="all">全部</button>
+      {Array.from(allTags).map((tag) => (
+        <button type="button" class="filter-chip" data-tag={tag}>#{tag}</button>
+      ))}
+    </div>
+  )}
+
+  {groupedByTopic.size > 0 ? (
+    Array.from(groupedByTopic.entries()).map(([topic, items]) => (
+      <section class="topic-section" data-topic-group>
+        <div class="topic-header">
+          <h2>{topic}</h2>
+          <span class="topic-count">{items.length}</span>
+        </div>
+        <ul class="entry-list">
+          {items.map((note) => (
+            <li
+              class="entry-item"
+              data-note-item
+              data-tags={(note.data.tags || []).join(',')}
+            >
+              <a href={`/notes/${note.id}`} class="entry-link">
+                <span class="entry-title">{resolveTitle(note)}</span>
+                <span class="entry-meta">{formatMonthDay(resolveDate(note))}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))
+  ) : (
+    <p class="empty-state">暂无学习笔记。</p>
+  )}
+</BaseLayout>
+
+<style>
+  .page-head {
+    margin-bottom: 2rem;
+  }
+
+  .page-head h1 {
+    font-size: 1.9rem;
+    font-weight: 750;
+    letter-spacing: -0.03em;
+    margin: 0 0 0.4rem;
+  }
+
+  .page-head p {
+    margin: 0;
+    color: var(--fg-muted);
+    font-size: 0.95rem;
+  }
+
+  .tag-filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .filter-chip {
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--fg-muted);
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    padding: 0.22rem 0.6rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.16s ease;
+  }
+
+  .filter-chip:hover {
+    color: var(--fg);
+    border-color: var(--border-strong);
+  }
+
+  .filter-chip.active {
+    background: var(--fg);
+    color: var(--bg);
+    border-color: var(--fg);
+  }
+
+  .topic-section {
+    margin-bottom: 2.6rem;
+  }
+
+  .topic-header {
+    display: flex;
+    align-items: baseline;
+    gap: 0.55rem;
+    margin-bottom: 0.65rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .topic-header h2 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 620;
+    color: var(--fg);
+  }
+
+  .topic-count {
+    font-size: 0.76rem;
+    font-family: var(--font-mono);
+    color: var(--fg-faint);
+  }
+
+  .empty-state {
+    color: var(--fg-muted);
+    font-size: 0.94rem;
+  }
+</style>
+
+<script is:inline>
+  (() => {
+    const bar = document.getElementById('note-tag-filters');
+    if (!bar) return;
+    const buttons = bar.querySelectorAll('.filter-chip');
+    const groups = document.querySelectorAll('[data-topic-group]');
+
+    buttons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const selected = btn.getAttribute('data-tag') || 'all';
+        buttons.forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        groups.forEach((group) => {
+          let visibleCount = 0;
+          group.querySelectorAll('[data-note-item]').forEach((item) => {
+            const tags = (item.getAttribute('data-tags') || '').split(',').filter(Boolean);
+            const show = selected === 'all' || tags.includes(selected);
+            item.style.display = show ? '' : 'none';
+            if (show) visibleCount++;
+          });
+          group.style.display = visibleCount > 0 ? '' : 'none';
+        });
+      });
+    });
+  })();
+</script>

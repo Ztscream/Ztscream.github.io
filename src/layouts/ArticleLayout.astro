@@ -1,0 +1,191 @@
+---
+import type { MarkdownHeading } from 'astro';
+import BaseLayout from './BaseLayout.astro';
+import Giscus from '../components/Giscus.astro';
+import { formatFullDate } from '../utils/content';
+
+interface Props {
+  title: string;
+  description?: string;
+  date: Date;
+  updated?: Date;
+  readingMinutes: number;
+  tags?: string[];
+  topic?: string;
+  backHref: string;
+  backLabel: string;
+  headings?: MarkdownHeading[];
+}
+
+const {
+  title,
+  description,
+  date,
+  updated,
+  readingMinutes,
+  tags = [],
+  topic,
+  backHref,
+  backLabel,
+  headings = [],
+} = Astro.props;
+
+const tocItems = headings.filter((h) => h.depth === 2 || h.depth === 3);
+---
+
+<BaseLayout title={title} description={description}>
+  <article class="article-wrap">
+    <header class="article-header">
+      <h1 class="article-title">{title}</h1>
+      <div class="article-meta">
+        <time datetime={date.toISOString()}>{formatFullDate(date)}</time>
+        <span class="sep">·</span>
+        <span>{readingMinutes} min read</span>
+        {topic && (
+          <>
+            <span class="sep">·</span>
+            <span class="topic-badge">{topic}</span>
+          </>
+        )}
+        {updated && (
+          <>
+            <span class="sep">·</span>
+            <span>更新于 {formatFullDate(updated)}</span>
+          </>
+        )}
+      </div>
+
+      {tags.length > 0 && (
+        <div class="article-tags">
+          {tags.map((tag) => (
+            <span class="tag-pill">#{tag}</span>
+          ))}
+        </div>
+      )}
+    </header>
+
+    {tocItems.length >= 2 && (
+      <details class="inline-toc">
+        <summary>目录大纲（{tocItems.length}）</summary>
+        <ul>
+          {tocItems.map((h) => (
+            <li class:list={[`depth-${h.depth}`]}>
+              <a href={`#${h.slug}`}>{h.text}</a>
+            </li>
+          ))}
+        </ul>
+      </details>
+    )}
+
+    <div class="prose">
+      <slot />
+    </div>
+
+    <div class="article-back">
+      <a href={backHref} class="back-link">
+        <span aria-hidden="true">←</span> {backLabel}
+      </a>
+    </div>
+
+    <Giscus />
+  </article>
+</BaseLayout>
+
+<style>
+  .article-header {
+    margin-bottom: 2.4rem;
+  }
+
+  .article-title {
+    font-size: 1.85rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1.32;
+    margin: 0 0 0.75rem;
+    color: var(--fg);
+  }
+
+  .article-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.85rem;
+    font-family: var(--font-mono);
+    color: var(--fg-muted);
+  }
+
+  .topic-badge {
+    color: var(--fg-secondary);
+  }
+
+  .article-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.85rem;
+  }
+
+  .inline-toc {
+    margin-bottom: 2rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-elevated);
+    font-size: 0.88rem;
+  }
+
+  .inline-toc summary {
+    cursor: pointer;
+    color: var(--fg-secondary);
+    font-weight: 500;
+    user-select: none;
+  }
+
+  .inline-toc ul {
+    list-style: none;
+    padding: 0;
+    margin: 0.65rem 0 0;
+  }
+
+  .inline-toc li {
+    margin: 0.3rem 0;
+  }
+
+  .inline-toc li.depth-3 {
+    padding-left: 1rem;
+  }
+
+  .inline-toc a {
+    color: var(--fg-muted);
+    transition: color 0.18s ease;
+  }
+
+  .inline-toc a:hover {
+    color: var(--fg);
+  }
+
+  .article-back {
+    margin-top: 3.2rem;
+  }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.9rem;
+    font-family: var(--font-mono);
+    color: var(--fg-muted);
+    transition: color 0.18s ease;
+  }
+
+  .back-link:hover {
+    color: var(--fg);
+  }
+
+  @media (max-width: 640px) {
+    .article-title {
+      font-size: 1.52rem;
+    }
+  }
+</style>

@@ -1,0 +1,44 @@
+---
+import { SITE } from '../site.config';
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>© {year} {SITE.author}</span>
+    <div class="footer-links">
+      <a href="/rss.xml" class="footer-link">RSS</a>
+      <span class="dot">·</span>
+      <a href={SITE.github} target="_blank" rel="noopener noreferrer" class="footer-link">GitHub</a>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    padding: 2rem 0 3rem;
+    font-size: 0.82rem;
+    color: var(--fg-faint);
+  }
+
+  .footer-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .footer-links {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .footer-link {
+    transition: color 0.18s ease;
+  }
+
+  .footer-link:hover {
+    color: var(--fg-muted);
+  }
+</style>

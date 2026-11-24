@@ -1,0 +1,181 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE } from '../site.config';
+import {
+  formatFullDate,
+  isPublished,
+  resolveDate,
+  resolveTitle,
+  sortByDateDesc,
+} from '../utils/content';
+
+const rawMemos = sortByDateDesc(await getCollection('memos', isPublished));
+const renderedMemos = await Promise.all(
+  rawMemos.map(async (memo) => {
+    const { Content } = await render(memo);
+    return { memo, Content };
+  })
+);
+---
+
+<BaseLayout title="当下与闪念" description="近期在关注的事，以及随手记下的短思考与今日所学（TIL）。">
+  <header class="page-head">
+    <h1>Now</h1>
+    <p>受 <a href="https://nownownow.com/about" target="_blank" rel="noopener noreferrer" class="link-underline">Now Page</a> 启发——记录近期重心，以及不值得单独成篇的碎片闪念。</p>
+  </header>
+
+  <section class="now-card">
+    <div class="now-card-head">
+      <span class="status-dot"></span>
+      <span>最近动态 · 更新于 {SITE.now.updatedAt}</span>
+    </div>
+    <ul class="now-items">
+      {SITE.now.items.map((item) => (
+        <li>
+          <strong>{item.label}：</strong>
+          <span>{item.text}</span>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="memos-section">
+    <h2 class="memos-heading">Memos & TIL</h2>
+    {renderedMemos.length > 0 ? (
+      <div class="memo-timeline">
+        {renderedMemos.map(({ memo, Content }) => (
+          <article class="memo-item" id={memo.id}>
+            <div class="memo-meta">
+              <time datetime={resolveDate(memo).toISOString()}>
+                {formatFullDate(resolveDate(memo))}
+              </time>
+              {memo.data.title && <span class="memo-title">· {resolveTitle(memo)}</span>}
+              {(memo.data.tags || []).map((t) => (
+                <span class="tag-pill">#{t}</span>
+              ))}
+            </div>
+            <div class="prose memo-prose">
+              <Content />
+            </div>
+          </article>
+        ))}
+      </div>
+    ) : (
+      <p class="empty-state">暂无闪念记录。在 Obsidian 中将 category 设为 memos 即可同步至此。</p>
+    )}
+  </section>
+</BaseLayout>
+
+<style>
+  .page-head {
+    margin-bottom: 2.2rem;
+  }
+
+  .page-head h1 {
+    font-size: 1.9rem;
+    font-weight: 750;
+    letter-spacing: -0.03em;
+    margin: 0 0 0.4rem;
+  }
+
+  .page-head p {
+    margin: 0;
+    color: var(--fg-muted);
+    font-size: 0.95rem;
+  }
+
+  .now-card {
+    padding: 1.25rem 1.4rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-elevated);
+    margin-bottom: 3.2rem;
+  }
+
+  .now-card-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    font-family: var(--font-mono);
+    color: var(--fg-muted);
+    margin-bottom: 0.85rem;
+  }
+
+  .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #3ca370;
+  }
+
+  .now-items {
+    margin: 0;
+    padding-left: 1.15rem;
+    color: var(--fg-secondary);
+    font-size: 0.95rem;
+  }
+
+  .now-items li {
+    margin: 0.45rem 0;
+  }
+
+  .now-items strong {
+    color: var(--fg);
+    font-weight: 600;
+  }
+
+  .memos-heading {
+    font-size: 0.88rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+    margin: 0 0 1.6rem;
+  }
+
+  .memo-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 2.2rem;
+  }
+
+  .memo-item {
+    position: relative;
+    padding-left: 1.15rem;
+    border-left: 1.5px solid var(--border-strong);
+  }
+
+  .memo-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.82rem;
+    font-family: var(--font-mono);
+    color: var(--fg-muted);
+    margin-bottom: 0.55rem;
+  }
+
+  .memo-title {
+    font-family: var(--font-sans);
+    font-weight: 550;
+    color: var(--fg);
+  }
+
+  .memo-prose {
+    font-size: 0.96rem;
+  }
+
+  .memo-prose :global(p) {
+    margin: 0.65rem 0;
+  }
+
+  .empty-state {
+    color: var(--fg-muted);
+    font-size: 0.94rem;
+  }
+</style>

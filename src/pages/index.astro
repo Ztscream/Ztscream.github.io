@@ -1,0 +1,194 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE } from '../site.config';
+import {
+  formatMonthDay,
+  isPublished,
+  resolveDate,
+  resolveTitle,
+  sortByDateDesc,
+} from '../utils/content';
+
+const [allBlogs, allNotes] = await Promise.all([
+  getCollection('blog', isPublished),
+  getCollection('notes', isPublished),
+]);
+
+const recentBlogs = sortByDateDesc(allBlogs).slice(0, 5);
+const recentNotes = sortByDateDesc(allNotes).slice(0, 5);
+---
+
+<BaseLayout>
+  <section class="intro-section">
+    <h1 class="hero-name">{SITE.title}</h1>
+    <div class="prose intro-prose">
+      <p>
+        你好，欢迎来到我的个人数字空间。这里用来存放成体系的<a href="/notes">学习笔记</a>、阶段性的<a href="/blog">博客思考</a>，以及日常折腾中的<a href="/now">当下与闪念</a>。
+      </p>
+      <p>
+        全站所有内容均在本地通过 <strong>Obsidian</strong> 离线编写，经由 GitHub Actions 自动构建发布。追求极简排版与零阻力记录，按 <kbd class="inline-kbd">Ctrl</kbd> + <kbd class="inline-kbd">K</kbd> 可随时检索全站。
+      </p>
+    </div>
+  </section>
+
+  <section class="home-block">
+    <div class="section-head">
+      <h2>近期博客</h2>
+      <a href="/blog" class="more-link">全部文章 →</a>
+    </div>
+    {recentBlogs.length > 0 ? (
+      <ul class="entry-list">
+        {recentBlogs.map((post) => (
+          <li class="entry-item">
+            <a href={`/blog/${post.id}`} class="entry-link">
+              <span class="entry-title">{resolveTitle(post)}</span>
+              <span class="entry-meta">{formatMonthDay(resolveDate(post))}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p class="empty-hint">暂未发布博客文章。</p>
+    )}
+  </section>
+
+  <section class="home-block">
+    <div class="section-head">
+      <h2>学习笔记</h2>
+      <a href="/notes" class="more-link">知识目录 →</a>
+    </div>
+    {recentNotes.length > 0 ? (
+      <ul class="entry-list">
+        {recentNotes.map((note) => (
+          <li class="entry-item">
+            <a href={`/notes/${note.id}`} class="entry-link">
+              <span class="entry-title">{resolveTitle(note)}</span>
+              <span class="entry-meta">
+                {note.data.topic && note.data.topic !== '未分类' ? `${note.data.topic} · ` : ''}
+                {formatMonthDay(resolveDate(note))}
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p class="empty-hint">暂未发布学习笔记。</p>
+    )}
+  </section>
+
+  <section class="home-block">
+    <div class="section-head">
+      <h2>当下状态</h2>
+      <a href="/now" class="more-link">当下与闪念 →</a>
+    </div>
+    <ul class="now-mini-list">
+      {SITE.now.items.slice(0, 2).map((item) => (
+        <li>
+          <span class="now-label">{item.label}</span>
+          <span class="now-text">{item.text}</span>
+        </li>
+      ))}
+    </ul>
+  </section>
+</BaseLayout>
+
+<style>
+  .intro-section {
+    margin-bottom: 3.4rem;
+  }
+
+  .hero-name {
+    font-size: 2rem;
+    font-weight: 750;
+    letter-spacing: -0.03em;
+    margin: 0 0 1.2rem;
+    color: var(--fg);
+  }
+
+  .intro-prose p {
+    margin: 0.9rem 0;
+  }
+
+  .inline-kbd {
+    font-family: var(--font-mono);
+    font-size: 0.78em;
+    padding: 0.1em 0.4em;
+    border: 1px solid var(--border-strong);
+    border-radius: 4px;
+    background: var(--bg-elevated);
+    color: var(--fg);
+  }
+
+  .home-block {
+    margin-bottom: 3rem;
+  }
+
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 0.85rem;
+    padding-bottom: 0.45rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-head h2 {
+    margin: 0;
+    font-size: 0.88rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+  }
+
+  .more-link {
+    font-size: 0.82rem;
+    font-family: var(--font-mono);
+    color: var(--fg-muted);
+    transition: color 0.18s ease;
+  }
+
+  .more-link:hover {
+    color: var(--fg);
+  }
+
+  .now-mini-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .now-mini-list li {
+    display: flex;
+    align-items: baseline;
+    gap: 0.85rem;
+    font-size: 0.95rem;
+    color: var(--fg-secondary);
+  }
+
+  .now-label {
+    flex-shrink: 0;
+    font-size: 0.78rem;
+    font-family: var(--font-mono);
+    color: var(--fg-muted);
+    padding: 0.1rem 0.45rem;
+    border-radius: 4px;
+    background: var(--bg-elevated);
+  }
+
+  .empty-hint {
+    font-size: 0.9rem;
+    color: var(--fg-faint);
+  }
+
+  @media (max-width: 640px) {
+    .now-mini-list li {
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+  }
+</style>

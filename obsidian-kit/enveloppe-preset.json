@@ -1,0 +1,99 @@
+{
+  "github": {
+    "branch": "main",
+    "automaticallyMergePR": true,
+    "dryRun": {
+      "enable": false,
+      "folderName": "enveloppe"
+    },
+    "tokenPath": "%configDir%/plugins/%pluginID%/env",
+    "api": {
+      "tiersForApi": "Github Free/Pro/Team (default)",
+      "hostname": ""
+    },
+    "workflow": {
+      "commitMessage": "[Enveloppe] Sync content",
+      "name": ""
+    },
+    "verifiedRepo": false,
+    "user": "Ztscream",
+    "repo": "Ztscream.github.io"
+  },
+  "upload": {
+    "behavior": "yaml",
+    "defaultName": "notes",
+    "rootFolder": "src/content",
+    "yamlFolderKey": "category",
+    "frontmatterTitle": {
+      "enable": false,
+      "key": "title"
+    },
+    "replaceTitle": [],
+    "replacePath": [],
+    "autoclean": {
+      "enable": true,
+      "include": ["src/content/blog", "src/content/notes", "src/content/memos", "public/uploads"],
+      "excluded": [
+        "src/content/blog/hello-digital-home.md",
+        "src/content/notes/obsidian-workflow.md",
+        "src/content/memos/first-til.md"
+      ]
+    },
+    "folderNote": {
+      "enable": false,
+      "rename": "index.md",
+      "addTitle": {
+        "enable": false,
+        "key": "title"
+      }
+    },
+    "metadataExtractorPath": ""
+  },
+  "conversion": {
+    "hardbreak": false,
+    "dataview": true,
+    "censorText": [],
+    "tags": {
+      "inline": false,
+      "exclude": [],
+      "fields": []
+    },
+    "links": {
+      "internal": true,
+      "unshared": false,
+      "wiki": true,
+      "slugify": "strict"
+    }
+  },
+  "embed": {
+    "attachments": true,
+    "overrideAttachments": [],
+    "keySendFile": [],
+    "notes": false,
+    "folder": "public/uploads",
+    "convertEmbedToLinks": "keep",
+    "charConvert": "->",
+    "unshared": false,
+    "useObsidianFolder": false
+  },
+  "plugin": {
+    "shareKey": "share",
+    "SetFrontmatterKey": "Set",
+    "fileMenu": true,
+    "editorMenu": true,
+    "excludedFolder": ["_templates"],
+    "copyLink": {
+      "enable": false,
+      "links": "https://ztscream.github.io",
+      "removePart": ["src/content"],
+      "transform": {
+        "toUri": true,
+        "slugify": "lower",
+        "applyRegex": []
+      }
+    },
+    "noticeError": true,
+    "displayModalRepoEditing": false,
+    "saveTab": true
+  }
+}

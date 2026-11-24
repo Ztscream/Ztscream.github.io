@@ -1,0 +1,302 @@
+<div id="search-modal" class="search-overlay" hidden aria-hidden="true">
+  <div class="search-dialog" role="dialog" aria-modal="true" aria-label="站内搜索">
+    <div class="search-input-row">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="search-icon">
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="m21 21-4.3-4.3"></path>
+      </svg>
+      <input
+        id="search-input"
+        type="search"
+        placeholder="搜索博客、学习笔记、标签或闪念..."
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <button type="button" id="close-search-btn" class="esc-badge">ESC</button>
+    </div>
+
+    <div id="search-results" class="search-results">
+      <div class="search-empty">输入关键词即可检索全站内容</div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .search-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: rgba(0, 0, 0, 0.42);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 12vh 1rem 2rem;
+  }
+
+  .search-overlay[hidden] {
+    display: none;
+  }
+
+  .search-dialog {
+    width: 100%;
+    max-width: 36rem;
+    background: var(--bg);
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.22);
+    overflow: hidden;
+  }
+
+  .search-input-row {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .search-icon {
+    color: var(--fg-muted);
+    flex-shrink: 0;
+  }
+
+  #search-input {
+    flex: 1;
+    border: 0;
+    outline: none;
+    background: transparent;
+    color: var(--fg);
+    font-size: 0.96rem;
+    font-family: inherit;
+  }
+
+  #search-input::placeholder {
+    color: var(--fg-faint);
+  }
+
+  .esc-badge {
+    border: 1px solid var(--border);
+    background: var(--bg-elevated);
+    color: var(--fg-muted);
+    border-radius: 4px;
+    padding: 0.15rem 0.45rem;
+    font-size: 0.7rem;
+    font-family: var(--font-mono);
+    cursor: pointer;
+  }
+
+  .search-results {
+    max-height: 55vh;
+    overflow-y: auto;
+    padding: 0.5rem;
+  }
+
+  .search-empty {
+    padding: 2rem 1rem;
+    text-align: center;
+    font-size: 0.88rem;
+    color: var(--fg-muted);
+  }
+
+  :global(.search-item) {
+    display: block;
+    padding: 0.65rem 0.8rem;
+    border-radius: 7px;
+    transition: background 0.15s ease;
+  }
+
+  :global(.search-item:hover),
+  :global(.search-item.selected) {
+    background: var(--bg-elevated);
+  }
+
+  :global(.search-item-top) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    margin-bottom: 0.2rem;
+  }
+
+  :global(.search-item-title) {
+    font-size: 0.94rem;
+    font-weight: 550;
+    color: var(--fg);
+  }
+
+  :global(.search-item-badge) {
+    font-size: 0.72rem;
+    font-family: var(--font-mono);
+    color: var(--fg-muted);
+    flex-shrink: 0;
+  }
+
+  :global(.search-item-snippet) {
+    font-size: 0.82rem;
+    color: var(--fg-muted);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  :global(.search-item mark) {
+    background: transparent;
+    color: var(--fg);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    font-weight: 600;
+  }
+</style>
+
+<script is:inline>
+  (() => {
+    const modal = document.getElementById('search-modal');
+    const openBtn = document.getElementById('open-search-btn');
+    const closeBtn = document.getElementById('close-search-btn');
+    const input = document.getElementById('search-input');
+    const resultsEl = document.getElementById('search-results');
+    if (!modal || !input || !resultsEl) return;
+
+    let searchIndex = null;
+    let loading = false;
+
+    async function ensureIndex() {
+      if (searchIndex || loading) return;
+      loading = true;
+      try {
+        const res = await fetch('/search-index.json');
+        searchIndex = await res.json();
+      } catch (err) {
+        searchIndex = [];
+      } finally {
+        loading = false;
+      }
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function highlight(text, terms) {
+      let safe = escapeHtml(text);
+      for (const term of terms) {
+        if (!term) continue;
+        const escapedTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        safe = safe.replace(new RegExp(`(${escapedTerm})`, 'gi'), '<mark>$1</mark>');
+      }
+      return safe;
+    }
+
+    function openModal() {
+      modal.hidden = false;
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      ensureIndex().then(() => renderResults(input.value));
+      setTimeout(() => input.focus(), 10);
+    }
+
+    function closeModal() {
+      modal.hidden = true;
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    }
+
+    function renderResults(rawQuery) {
+      const q = rawQuery.trim().toLowerCase();
+      if (!searchIndex) {
+        resultsEl.innerHTML = '<div class="search-empty">正在加载索引...</div>';
+        return;
+      }
+      if (!q) {
+        const recent = searchIndex.slice(0, 6);
+        if (!recent.length) {
+          resultsEl.innerHTML = '<div class="search-empty">暂无可检索内容</div>';
+          return;
+        }
+        resultsEl.innerHTML = recent
+          .map(
+            (item) => `
+            <a class="search-item" href="${item.url}">
+              <div class="search-item-top">
+                <span class="search-item-title">${escapeHtml(item.title)}</span>
+                <span class="search-item-badge">${escapeHtml(item.section)}</span>
+              </div>
+              ${item.snippet ? `<div class="search-item-snippet">${escapeHtml(item.snippet)}</div>` : ''}
+            </a>`
+          )
+          .join('');
+        return;
+      }
+
+      const terms = q.split(/\s+/).filter(Boolean);
+      const matched = searchIndex
+        .map((item) => {
+          const hayTitle = item.title.toLowerCase();
+          const hayMeta = (item.tags + ' ' + (item.topic || '')).toLowerCase();
+          const hayBody = item.content.toLowerCase();
+          let score = 0;
+          for (const t of terms) {
+            const inTitle = hayTitle.includes(t);
+            const inMeta = hayMeta.includes(t);
+            const inBody = hayBody.includes(t);
+            if (!inTitle && !inMeta && !inBody) return null;
+            if (inTitle) score += 10;
+            if (inMeta) score += 5;
+            if (inBody) score += 2;
+          }
+          let snippet = item.snippet || '';
+          const idx = hayBody.indexOf(terms[0]);
+          if (idx !== -1) {
+            const start = Math.max(0, idx - 24);
+            snippet = (start > 0 ? '...' : '') + item.content.slice(start, idx + 80);
+          }
+          return { item, score, snippet };
+        })
+        .filter(Boolean)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 12);
+
+      if (!matched.length) {
+        resultsEl.innerHTML = '<div class="search-empty">没有找到匹配的内容</div>';
+        return;
+      }
+
+      resultsEl.innerHTML = matched
+        .map(
+          ({ item, snippet }) => `
+          <a class="search-item" href="${item.url}">
+            <div class="search-item-top">
+              <span class="search-item-title">${highlight(item.title, terms)}</span>
+              <span class="search-item-badge">${escapeHtml(item.section)}</span>
+            </div>
+            ${snippet ? `<div class="search-item-snippet">${highlight(snippet, terms)}</div>` : ''}
+          </a>`
+        )
+        .join('');
+    }
+
+    openBtn?.addEventListener('click', openModal);
+    closeBtn?.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+    input.addEventListener('input', () => renderResults(input.value));
+
+    window.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        modal.hidden ? openModal() : closeModal();
+      } else if (e.key === 'Escape' && !modal.hidden) {
+        closeModal();
+      }
+    });
+  })();
+</script>

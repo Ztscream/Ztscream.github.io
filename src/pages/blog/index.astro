@@ -1,0 +1,77 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import {
+  estimateReadingMinutes,
+  formatMonthDay,
+  isPublished,
+  resolveDate,
+  resolveTitle,
+  sortByDateDesc,
+} from '../../utils/content';
+
+const posts = sortByDateDesc(await getCollection('blog', isPublished));
+
+// 按年份分组
+const groupedByYear = new Map<number, typeof posts>();
+for (const post of posts) {
+  const year = resolveDate(post).getFullYear();
+  if (!groupedByYear.has(year)) groupedByYear.set(year, []);
+  groupedByYear.get(year)!.push(post);
+}
+---
+
+<BaseLayout title="博客" description="按时间归档的思考、技术复盘与随笔。">
+  <header class="page-head">
+    <h1>Blog</h1>
+    <p>阶段性的技术总结、工程复盘与独立思考。</p>
+  </header>
+
+  {groupedByYear.size > 0 ? (
+    Array.from(groupedByYear.entries()).map(([year, items]) => (
+      <section class="year-group">
+        <div class="year-watermark" aria-hidden="true">
+          <span>{year}</span>
+        </div>
+        <ul class="entry-list">
+          {items.map((post) => (
+            <li class="entry-item">
+              <a href={`/blog/${post.id}`} class="entry-link">
+                <span class="entry-title">{resolveTitle(post)}</span>
+                <span class="entry-meta">
+                  {formatMonthDay(resolveDate(post))} · {estimateReadingMinutes(post.body)}m
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))
+  ) : (
+    <p class="empty-state">暂无博客文章，在 Obsidian 中勾选 share 即可一键发布。</p>
+  )}
+</BaseLayout>
+
+<style>
+  .page-head {
+    margin-bottom: 3rem;
+  }
+
+  .page-head h1 {
+    font-size: 1.9rem;
+    font-weight: 750;
+    letter-spacing: -0.03em;
+    margin: 0 0 0.4rem;
+  }
+
+  .page-head p {
+    margin: 0;
+    color: var(--fg-muted);
+    font-size: 0.95rem;
+  }
+
+  .empty-state {
+    color: var(--fg-muted);
+    font-size: 0.94rem;
+  }
+</style>
