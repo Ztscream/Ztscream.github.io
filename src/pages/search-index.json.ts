@@ -47,7 +47,7 @@ export const GET: APIRoute = async () => {
       return {
         title: resolveTitle(entry),
         section: '当下 · 闪念',
-        url: `/now#${entry.id}`,
+        url: `/now/${entry.id}`,
         tags: (entry.data.tags || []).join(' '),
         topic: '',
         snippet: plain.slice(0, 90),

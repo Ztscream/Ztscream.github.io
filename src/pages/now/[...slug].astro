@@ -1,0 +1,35 @@
+---
+import { getCollection, render } from 'astro:content';
+import ArticleLayout from '../../layouts/ArticleLayout.astro';
+import {
+  estimateReadingMinutes,
+  isPublished,
+  resolveDate,
+  resolveTitle,
+} from '../../utils/content';
+
+export async function getStaticPaths() {
+  const memos = await getCollection('memos', isPublished);
+  return memos.map((memo) => ({
+    params: { slug: memo.id },
+    props: { memo },
+  }));
+}
+
+const { memo } = Astro.props;
+const { Content, headings } = await render(memo);
+---
+
+<ArticleLayout
+  title={resolveTitle(memo)}
+  description={memo.data.description}
+  date={resolveDate(memo)}
+  updated={memo.data.updated}
+  readingMinutes={estimateReadingMinutes(memo.body)}
+  tags={memo.data.tags}
+  backHref="/now"
+  backLabel="返回当下与闪念"
+  headings={headings}
+>
+  <Content />
+</ArticleLayout>

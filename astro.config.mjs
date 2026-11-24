@@ -25,6 +25,10 @@ function remarkNormalizeObsidianUploads() {
 export default defineConfig({
   site: 'https://ztscream.github.io',
   integrations: [mdx(), sitemap()],
+  // 文章换了模块后，旧链接跳转到新地址
+  redirects: {
+    '/blog/琐记': '/now/琐记',
+  },
   markdown: {
     remarkPlugins: [remarkMath, remarkNormalizeObsidianUploads],
     rehypePlugins: [rehypeKatex],
