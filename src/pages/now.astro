@@ -1,8 +1,9 @@
 ---
-import { getCollection, render } from 'astro:content';
+import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { SITE } from '../site.config';
 import {
+  extractEpigraph,
   formatFullDate,
   isPublished,
   resolveDate,
@@ -10,13 +11,10 @@ import {
   sortByDateDesc,
 } from '../utils/content';
 
-const rawMemos = sortByDateDesc(await getCollection('memos', isPublished));
-const renderedMemos = await Promise.all(
-  rawMemos.map(async (memo) => {
-    const { Content } = await render(memo);
-    return { memo, Content };
-  })
-);
+const memos = sortByDateDesc(await getCollection('memos', isPublished)).map((memo) => ({
+  memo,
+  epigraph: extractEpigraph(memo.body),
+}));
 ---
 
 <BaseLayout title="当下与闪念" description="近期在关注的事，以及随手记下的短思考与今日所学（TIL）。">
@@ -42,22 +40,28 @@ const renderedMemos = await Promise.all(
 
   <section class="memos-section">
     <h2 class="memos-heading">Memos & TIL</h2>
-    {renderedMemos.length > 0 ? (
+    {memos.length > 0 ? (
       <div class="memo-timeline">
-        {renderedMemos.map(({ memo, Content }) => (
+        {memos.map(({ memo, epigraph }) => (
           <article class="memo-item" id={memo.id}>
             <div class="memo-meta">
               <time datetime={resolveDate(memo).toISOString()}>
                 {formatFullDate(resolveDate(memo))}
               </time>
-              {memo.data.title && <span class="memo-title">· {resolveTitle(memo)}</span>}
               {(memo.data.tags || []).map((t) => (
                 <span class="tag-pill">#{t}</span>
               ))}
             </div>
-            <div class="prose memo-prose">
-              <Content />
-            </div>
+            <h3 class="memo-title">
+              <a href={`/now/${memo.id}`}>{resolveTitle(memo)}</a>
+            </h3>
+            {epigraph.length > 0 ? (
+              <blockquote class="memo-epigraph">
+                {epigraph.map((line) => <p>{line}</p>)}
+              </blockquote>
+            ) : (
+              memo.data.description && <p class="memo-desc">{memo.data.description}</p>
+            )}
           </article>
         ))}
       </div>
@@ -161,17 +165,47 @@ const renderedMemos = await Promise.all(
   }
 
   .memo-title {
-    font-family: var(--font-sans);
-    font-weight: 550;
+    font-size: 1.12rem;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    margin: 0 0 0.6rem;
+  }
+
+  .memo-title a {
     color: var(--fg);
+    text-decoration: none;
   }
 
-  .memo-prose {
-    font-size: 0.96rem;
+  .memo-title a:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
   }
 
-  .memo-prose :global(p) {
-    margin: 0.65rem 0;
+  .memo-epigraph {
+    margin: 0 0 0.7rem;
+    padding: 0.1rem 0 0.1rem 0.9rem;
+    border-left: 2px solid var(--border);
+    color: var(--fg-muted);
+    font-size: 0.93rem;
+    line-height: 1.75;
+  }
+
+  .memo-epigraph p {
+    margin: 0;
+  }
+
+  .memo-epigraph p + p {
+    margin-top: 0.25rem;
+  }
+
+  .memo-item > :last-child {
+    margin-bottom: 0;
+  }
+
+  .memo-desc {
+    margin: 0 0 0.7rem;
+    color: var(--fg-secondary);
+    font-size: 0.94rem;
   }
 
   .empty-state {

@@ -80,3 +80,26 @@ export function stripMarkdown(md?: string): string {
     .replace(/\s+/g, ' ')
     .trim();
 }
+
+/**
+ * 提取题记：正文开头（忽略空行）连续的引用块 `>` 行。
+ * 返回去掉 `>` 和行内 Markdown 标记后的非空行；没有题记时返回空数组。
+ */
+export function extractEpigraph(body?: string): string[] {
+  if (!body) return [];
+  const lines = body.replace(/\r\n?/g, '\n').split('\n');
+  let i = 0;
+  while (i < lines.length && lines[i].trim() === '') i++;
+  const quote: string[] = [];
+  for (; i < lines.length && lines[i].trimStart().startsWith('>'); i++) {
+    quote.push(lines[i].trimStart().replace(/^>\s?/, ''));
+  }
+  return quote
+    .map((line) =>
+      line
+        .replace(/\[([^\]]+)\]\(.*?\)/g, '$1')
+        .replace(/[*_`~]/g, '')
+        .trim()
+    )
+    .filter(Boolean);
+}
