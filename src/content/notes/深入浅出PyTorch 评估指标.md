@@ -1,9 +1,12 @@
 ---
-title: "深入浅出PyTorch：模型评估指标"
+title: 深入浅出PyTorch：模型评估指标
 date: 2026-11-24
-topic: "深入浅出PyTorch"
-description: "从混淆矩阵出发，整理 OA、AA、Kappa、Precision、Recall、F1、PR 曲线、IoU、AP 与 mAP 的定义、公式和代码。"
-tags: [PyTorch, 深度学习, 评估指标]
+topic: 深入浅出PyTorch
+description: 从混淆矩阵出发，整理 OA、AA、Kappa、Precision、Recall、F1、PR 曲线、IoU、AP 与 mAP 的定义、公式和代码。
+tags:
+  - PyTorch
+  - 深度学习
+  - 评估指标
 category: notes
 share: true
 ---
