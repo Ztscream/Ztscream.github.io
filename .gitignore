@@ -10,6 +10,7 @@ node_modules/
 _templates/
 my-notes/
 assets/
+使用手册.md
 
 # logs
 npm-debug.log*
